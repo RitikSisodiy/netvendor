@@ -1,12 +1,36 @@
 import json
 import re
 from itertools import zip_longest, takewhile, dropwhile
+from unittest import result
 from kifwat_scrapy.main import uploaddata
 # from scrapy import Request
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
-
+class URL:
+    def __init__(self,url) -> None:
+        self.url = url
+    def text(self):
+        return self.url
+class Link:
+    def extract_links(self,res):
+        links = [
+            URL("https://www.netvendeur.com/prix/region-auvergne-rhone-alpes-3/"),
+            URL("https://www.netvendeur.com/prix/region-bourgogne-franche-comte-5/"),
+            URL("https://www.netvendeur.com/prix/region-bretagne-6/"),
+            URL("https://www.netvendeur.com/prix/region-centre-val-de-loire-7/"),
+            URL("https://www.netvendeur.com/prix/region-corse-9/"),
+            URL("https://www.netvendeur.com/prix/region-grand-est-1/"),
+            URL("https://www.netvendeur.com/prix/region-hauts-de-france-17/"),
+            URL("https://www.netvendeur.com/prix/region-ile-de-france-12/"),
+            URL("https://www.netvendeur.com/prix/region-normandie-4/"),
+            URL("https://www.netvendeur.com/prix/region-nouvelle-aquitaine-2/"),
+            URL("https://www.netvendeur.com/prix/region-occitanie-13/"),
+            URL("https://www.netvendeur.com/prix/region-outre-mer-23/"),
+            URL("https://www.netvendeur.com/prix/region-pays-de-la-loire-19/"),
+            URL("https://www.netvendeur.com/prix/region-provence-alpes-cote-d-azur-18/"),
+        ]
+        return links
 class NetvendeurSpider(CrawlSpider):
     name = 'netvendeur'
     start_urls = [
@@ -20,37 +44,39 @@ class NetvendeurSpider(CrawlSpider):
     }
     rules = (
         Rule(
-            LinkExtractor(restrict_xpaths=['//div[@id="region"]/../*'], allow=['/prix/'], ),
-            callback='parse_region'
+            Link(),
+            callback='parse_region',
+            cb_kwargs=dict(parenturl = start_urls[0])
         ),
     )
+    result=[]
     custom_settings = {
         'CONCURRENT_REQUESTS': 1,
-        'FEEDS': {
-            'netvendeur.csv': {
-                'format': 'csv',
-                'fields': [
-                    'Name', 'Prix bas maison', 'Prix moyen maison', 'Prix haut maison',
-                    'Prix bas apparetement', 'Prix moyen apparetement', 'Prix haut apparetement',
+        # 'FEEDS': {
+        #     'netvendeur.csv': {
+        #         'format': 'csv',
+        #         'fields': [
+        #             'Name', 'Prix bas maison', 'Prix moyen maison', 'Prix haut maison',
+        #             'Prix bas apparetement', 'Prix moyen apparetement', 'Prix haut apparetement',
 
-                    'depuis 2 ans maisons', 'depuis 2 ans appartements', 'depuis 1 an maisons',
-                    'depuis 1 an appartements', 'depuis 6 mois maisons', 'depuis 6 mois appartements',
-                    'depuis 3 mois maisons', 'depuis 3 mois appartements',
+        #             'depuis 2 ans maisons', 'depuis 2 ans appartements', 'depuis 1 an maisons',
+        #             'depuis 1 an appartements', 'depuis 6 mois maisons', 'depuis 6 mois appartements',
+        #             'depuis 3 mois maisons', 'depuis 3 mois appartements',
 
-                    'Maisons', 'Appartements',
-                    '- de 35m2', '35m2 - 80m2', '80m2 - 110m2', '+ de 150m2',
-                    '1 pièce', '2 pièces', '3 pièces', '+ 4 pièces',
-                    'volume', 'evolution', 'price_chart',
+        #             'Maisons', 'Appartements',
+        #             '- de 35m2', '35m2 - 80m2', '80m2 - 110m2', '+ de 150m2',
+        #             '1 pièce', '2 pièces', '3 pièces', '+ 4 pièces',
+        #             'volume', 'evolution', 'price_chart',
 
-                    "Répartition selon l'âge", "Répartition selon l'activité (Hommes)",
-                    "Répartition selon l'activité (Femmes)",
+        #             "Répartition selon l'âge", "Répartition selon l'activité (Hommes)",
+        #             "Répartition selon l'activité (Femmes)",
 
-                    'Habitants', 'Population', 'Superficie', 'Marie', 'Logements', 'price_table',
+        #             'Habitants', 'Population', 'Superficie', 'Marie', 'Logements', 'price_table',
 
-                    'region', 'dept', 'city', 'quarter', 'proximité'
-                ]
-            },
-        },
+        #             'region', 'dept', 'city', 'quarter', 'proximité'
+        #         ]
+        #     },
+        # },
         'DUPEFILTER_CLASS': 'kifwat_scrapy.middlewares.CustomFilter',
         'USER_AGENT': 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
     }
@@ -60,6 +86,7 @@ class NetvendeurSpider(CrawlSpider):
 
     def parse_item(self, response, **__):
         typeofdata = __['typeofdata']
+        parenturl = __['parenturl']
         breadcrumbs = response.css('[itemprop="itemListElement"] [itemprop="name"]::text').extract()[2:]
         breadcrumbs_dict = dict(zip_longest(['region', 'dept', 'city', 'quarter', 'proximité'], breadcrumbs))
         bas_maison, moyen_maison, haut_maison = response.xpath(
@@ -86,6 +113,7 @@ class NetvendeurSpider(CrawlSpider):
 
         price_chart = {f'{data_set["label"]} {label}': value  for data_set in price_chart['datasets'] for label, value in zip(price_chart['labels'], data_set['data'])}
 
+        curl = response.request.url
         result =  {
             # 'Name': response.css('#TitreTypeBien:contains("-")::text').extract_first().split('- ')[-1],
             'Name': breadcrumbs[-1],
@@ -118,29 +146,33 @@ class NetvendeurSpider(CrawlSpider):
             "Répartition selon l'activité (Femmes)": self._get_activity_by_women(response),
 
             **self._price_and_estimate_tables(response),
+            'source':curl,
         }
-        curl = response.request.url
         zipcode = (curl[curl.rfind('-')+1:]).replace("/",'')
         result['zip_code'] = zipcode if zipcode.isnumeric() else None
-        print(zipcode)
-        self.res = uploaddata(result,typeofdata,self.res)
-        print(self.res)
+        # print(zipcode)
+        uploaddata(result,typeofdata,parenturl)
+        # self.result.append([result,typeofdata,parenturl])
+        # if len(self.result)==100:
+        #     self.res = uploaddata(self.result)
+        #     self.result=[]
+        # print(self.res)
         return result
 
     def parse_region(self, response, **kwargs):
-        yield self.parse_item(response,typeofdata='region')
-
+        yield self.parse_item(response,typeofdata='region',**kwargs)
         for link in LinkExtractor(
                 restrict_xpaths=['//h2[contains(., "départements")]/../div[contains(@class, "list_dep")]'],
                 allow=['/prix/']
         ).extract_links(response):
             yield response.follow(
                 link.url,
-                callback=self.parse_dept
+                callback=self.parse_dept,
+                cb_kwargs=dict(parenturl = response.request.url)
             )
 
     def parse_dept(self, response, **kwargs):
-        yield self.parse_item(response,typeofdata='department')
+        yield self.parse_item(response,typeofdata='department',**kwargs)
 
         for link in LinkExtractor(
                 restrict_xpaths=['//h3[contains(., "villes")]/../div[contains(@class, "list_dep")]'],
@@ -148,11 +180,12 @@ class NetvendeurSpider(CrawlSpider):
         ).extract_links(response):
             yield response.follow(
                 link.url,
-                callback=self.parse_city
+                callback=self.parse_city,
+                cb_kwargs=dict(parenturl = response.request.url)
             )
 
     def parse_city(self, response, **kwargs):
-        yield self.parse_item(response,typeofdata='city')
+        yield self.parse_item(response,typeofdata='city',**kwargs)
 
         for link in LinkExtractor(
                 restrict_css=['div#prix-autre-quartier'],
@@ -160,11 +193,12 @@ class NetvendeurSpider(CrawlSpider):
         ).extract_links(response):
             yield response.follow(
                 link.url,
-                callback=self.parse_quarter
+                callback=self.parse_quarter,
+                cb_kwargs=dict(parenturl = response.request.url)
             )
 
     def parse_quarter(self, response, **kwargs):
-        yield self.parse_item(response,typeofdata='quater')
+        yield self.parse_item(response,typeofdata='quater',**kwargs)
 
         breadcrumbs = response.css('[itemprop="itemListElement"] [itemprop="name"]::text').extract()[2:]
         breadcrumbs = dict(zip_longest(['region', 'dept', 'city', 'quarter', 'proximité'], breadcrumbs))
@@ -178,7 +212,7 @@ class NetvendeurSpider(CrawlSpider):
                 link.url,
                 meta={'quarter': breadcrumbs['quarter']},
                 callback=self.parse_item,
-                cb_kwargs=dict(typeofdata='streets')
+                cb_kwargs=dict(typeofdata='streets',parenturl = response.request.url)
             )
 
     def _partition_by_type(self, response):

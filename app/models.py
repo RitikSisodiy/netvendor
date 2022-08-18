@@ -51,15 +51,20 @@ class scrapData(models.Model):
     zip_code= models.CharField(max_length=10,blank=True,null=True)
     updated_at= models.DateTimeField(auto_now=True)
     price_chart= models.TextField(null=True,blank=True)
+    source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "barometer_regions"
+        db_table = "barometer_regiondata"
     def clean(self):
-        print('inclean')
+        # print('inclean')
         for f in scrapData._meta.fields:
             if "BigIntegerField" in str(type(f)) or "IntegerField"  in str(type(f)):
                 if isinstance(getattr(self,f.name),str) and not getattr(self,f.name).isnumeric():
                     # print("not string")
                     setattr(self,f.name,0)
+    def bulk_create(self, objs, clean_check=None, batch_size=None, ignore_conflicts=False):
+        print('bulk cleane is working')
+        for obj in objs:
+            obj.clean()
    
 class scrapDepartment(models.Model):
     name = models.CharField(max_length=100,default=None,null=True)
@@ -104,14 +109,19 @@ class scrapDepartment(models.Model):
     quarter= models.CharField(max_length=100,default=None,null=True)
     street= models.CharField(max_length=100,default=None,null=True)
     top_city= models.IntegerField(max_length=100,default=0)
-    idregion= models.ForeignKey(scrapData,on_delete=models.SET_NULL,null=True)
+    idregion= models.ForeignKey(scrapData,on_delete=models.SET_NULL,null=True,db_column="idregion")
     zip_code= models.CharField(max_length=10,blank=True,null=True)
     updated_at= models.DateTimeField(auto_now=True)
     price_chart= models.TextField(null=True,blank=True)
+    source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "barometer_departements"
+        db_table = "barometer_departementdata"
+    def bulk_create(self, objs, clean_check=None, batch_size=None, ignore_conflicts=False):
+        print('bulk cleane is working')
+        for obj in objs:
+            obj.clean()
     def clean(self):
-        print('inclean')
+        # print('inclean')
         for f in scrapDepartment._meta.fields:
             if "BigIntegerField" in str(type(f)) or "IntegerField"  in str(type(f)):
                 if isinstance(getattr(self,f.name),str) and not getattr(self,f.name).isnumeric():
@@ -160,14 +170,19 @@ class scrapCity(models.Model):
     quarter= models.CharField(max_length=100,default=None,null=True)
     street= models.CharField(max_length=100,default=None,null=True)
     top_city= models.IntegerField(max_length=100,default=0)
-    idDepartment= models.ForeignKey(scrapDepartment,on_delete=models.SET_NULL,null=True)
+    idDepartment= models.ForeignKey(scrapDepartment,on_delete=models.SET_NULL,null=True,db_column="idDepartment")
     zip_code= models.CharField(max_length=10,blank=True,null=True)
     updated_at= models.DateTimeField(auto_now=True)
     price_chart= models.TextField(null=True,blank=True)
+    source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "barometer_citys"
+        db_table = "barometer_citydata"
+    def bulk_create(self, objs, clean_check=None, batch_size=None, ignore_conflicts=False):
+        print('bulk cleane is working')
+        for obj in objs:
+            obj.clean()
     def clean(self):
-        print('inclean')
+        # print('inclean')
         for f in scrapCity._meta.fields:
             if "BigIntegerField" in str(type(f)) or "IntegerField"  in str(type(f)):
                 if isinstance(getattr(self,f.name),str) and not getattr(self,f.name).isnumeric():
@@ -216,19 +231,24 @@ class scrapQuarters(models.Model):
     quarter= models.CharField(max_length=100,default=None,null=True)
     street= models.CharField(max_length=100,default=None,null=True)
     top_city= models.IntegerField(max_length=100,default=0)
-    idCity= models.ForeignKey(scrapCity,on_delete=models.SET_NULL,null=True)
+    idCity= models.ForeignKey(scrapCity,on_delete=models.SET_NULL,null=True,db_column="idCity")
     zip_code= models.CharField(max_length=10,blank=True,null=True)
     updated_at= models.DateTimeField(auto_now=True)
     price_chart= models.TextField(null=True,blank=True)
+    source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "barometer_quarters"
+        db_table = "barometer_quarterdata"
     def clean(self):
-        print('inclean')
+        # print('inclean')
         for f in scrapQuarters._meta.fields:
             if "BigIntegerField" in str(type(f)) or "IntegerField"  in str(type(f)):
                 if isinstance(getattr(self,f.name),str) and not getattr(self,f.name).isnumeric():
                     # print("not string")
                     setattr(self,f.name,0)
+    def bulk_create(self, objs, clean_check=None, batch_size=None, ignore_conflicts=False):
+        print('bulk cleane is working')
+        for obj in objs:
+            obj.clean()
 class scrapStreets(models.Model):
     name = models.CharField(max_length=100,default=None,null=True)
     prix_bas_maison = models.BigIntegerField(default=0)
@@ -272,16 +292,21 @@ class scrapStreets(models.Model):
     quarter= models.CharField(max_length=100,default=None,null=True)
     street= models.CharField(max_length=100,default=None,null=True)
     top_city= models.IntegerField(max_length=100,default=0)
-    idQuarter= models.ForeignKey(scrapQuarters,on_delete=models.SET_NULL,null=True)
+    idQuarter= models.ForeignKey(scrapQuarters,on_delete=models.SET_NULL,null=True,db_column="idQuarter")
     zip_code= models.CharField(max_length=10,blank=True,null=True)
     updated_at= models.DateTimeField(auto_now=True)
     price_chart= models.TextField(null=True,blank=True)
+    source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "barometer_streets"
+        db_table = "barometer_streetdata"
     def clean(self):
-        print('inclean')
+        # print('inclean')
         for f in scrapStreets._meta.fields:
             if "BigIntegerField" in str(type(f)) or "IntegerField"  in str(type(f)):
                 if isinstance(getattr(self,f.name),str) and not getattr(self,f.name).isnumeric():
                     # print("not string")
                     setattr(self,f.name,0)   
+    def bulk_create(self, objs, clean_check=None, batch_size=None, ignore_conflicts=False):
+        print('bulk cleane is working')
+        for obj in objs:
+            obj.clean()

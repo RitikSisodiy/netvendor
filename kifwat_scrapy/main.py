@@ -1,10 +1,13 @@
 from operator import index
 import os
+from re import T
+import traceback
 from django.conf import settings
 from django.apps import apps
 from unidecode import unidecode
 import os     
 from dotenv import load_dotenv
+import json
 import subprocess
 load_dotenv()
 conf = {
@@ -74,42 +77,49 @@ def fixField(field):
         field = field.replace(d[0],d[1])
     return field
 
-def uploaddata(data,typeofdata,res):
-    print(data)
-    
-    if typeofdata == "region":
-        instance = scrapData
-        fields = [f.name for f in instance._meta.fields]
-        res['regionid'] = uploadInModel(instance,data,fields)
-        return res
-    if typeofdata == 'department':
-        instance = scrapDepartment
-        fields = [f.name for f in instance._meta.fields]
-        data["idregion"] = scrapData.objects.get(pk=res['regionid'])
-        res['departmentid'] = uploadInModel(instance,data,fields)
-        return res
-        # input('press any key')
-    if typeofdata == 'city':
-        instance = scrapCity
-        fields = [f.name for f in instance._meta.fields]
-        data["idDepartment"] = scrapDepartment.objects.get(pk=res['departmentid'])
-        res['cityid'] = uploadInModel(instance,data,fields)
-        return res
-        # input('press any key')
-    if typeofdata == 'quater':
-        instance = scrapQuarters
-        fields = [f.name for f in instance._meta.fields]
-        data["idCity"] = scrapCity.objects.get(pk=res['cityid'])
-        res['quaterid'] = uploadInModel(instance,data,fields)
-        return res
-        # input('press any key')
-    if typeofdata == 'streets':
-        instance = scrapStreets
-        fields = [f.name for f in instance._meta.fields]
-        data["idQuarter"] = scrapQuarters.objects.get(pk=res['quaterid'])
-        res['streetid'] = uploadInModel(instance,data,fields)
-        return res
-
+def uploaddata(oridata,typeofdata,parenturl):
+    # with open("out.json",'a') as file:
+    #     file.write(json.dumps(oridata)+"\n")
+    try:
+        data = oridata
+        # print(data)
+        res={}
+        if typeofdata == "region":
+            instance = scrapData
+            fields = [f.name for f in instance._meta.fields]
+            res['regionid'] = uploadInModel(instance,data,fields)
+            # return res
+        if typeofdata == 'department':
+            instance = scrapDepartment
+            fields = [f.name for f in instance._meta.fields]
+            data["idregion"] = scrapData.objects.get(source=parenturl)
+            res['departmentid'] = uploadInModel(instance,data,fields)
+            # return res
+            # input('press any key')
+        if typeofdata == 'city':
+            instance = scrapCity
+            fields = [f.name for f in instance._meta.fields]
+            data["idDepartment"] = scrapDepartment.objects.get(source=parenturl)
+            res['cityid'] = uploadInModel(instance,data,fields)
+            # return res
+            # input('press any key')
+        if typeofdata == 'quater':
+            instance = scrapQuarters
+            fields = [f.name for f in instance._meta.fields]
+            data["idCity"] = scrapCity.objects.get(source=parenturl)
+            res['quaterid'] = uploadInModel(instance,data,fields)
+            # return res
+            # input('press any key')
+        if typeofdata == 'streets':
+            instance = scrapStreets
+            fields = [f.name for f in instance._meta.fields]
+            data["idQuarter"] = scrapQuarters.objects.get(source=parenturl)
+            res['streetid'] = uploadInModel(instance,data,fields)
+            # return res
+    except Exception as e:
+        traceback.print_exc()
+        print("got error")
+        # input()
 
 def uploadInModel(instance,data,fields):
     fdata = {}
@@ -121,10 +131,25 @@ def uploadInModel(instance,data,fields):
             fdata[fields[index]] = value
     # newda,created = scrapData.objects.get_or_create(**fdata)
     # print(created)
+    def update_and_clean(queryset,fdata):
+        for obj in queryset:
+            for k,v in fdata.items():
+                setattr(obj,k,v)
+            obj.clean()
+            obj.save()
     try:
-        newda = instance.objects.get(**fdata)
-    except:
+        newda = instance.objects.filter(source=fdata['source'])
+        if newda.exists():
+            update_and_clean(newda,fdata)
+            # newda.update(**fdata)
+        else:
+            newda = instance(**fdata) 
+            newda.clean()
+            newda.save()
+    except Exception as e:
+        traceback.print_exc()
+        # input("in exep")
         newda = instance(**fdata) 
         newda.clean()
         newda.save()
-    return newda.id
+    # return newda.id
