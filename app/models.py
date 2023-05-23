@@ -170,7 +170,7 @@ class scrapCity(models.Model):
     quarter= models.CharField(max_length=100,default=None,null=True)
     street= models.CharField(max_length=100,default=None,null=True)
     top_city= models.IntegerField(max_length=100,default=0)
-    idDepartment= models.ForeignKey(scrapDepartment,on_delete=models.SET_NULL,null=True,db_column="idDepartment")
+    idDepartment= models.ForeignKey(scrapDepartment,on_delete=models.SET_NULL,null=True)
     zip_code= models.CharField(max_length=10,blank=True,null=True)
     updated_at= models.DateTimeField(auto_now=True)
     price_chart= models.TextField(null=True,blank=True)
