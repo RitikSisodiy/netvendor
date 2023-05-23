@@ -1,85 +1,124 @@
-I - Introduction:
+# Scraping Data with Scrapy - Step-by-Step Guide
 
-The intention of this documentation is to give the reader a step-by-step guide to scrap data from ““
+## Introduction
 
-II - Scope:
+The purpose of this guide is to provide a detailed, step-by-step explanation of how to scrape data from a website using Scrapy.
 
-Through this documentation, it shows how to setup our Scrapy spider ,how to install it on your machine, And 
+## Scope
 
-start scraping
+This guide covers the setup process for Scrapy, including installation instructions, and provides a walkthrough of how to start the scraping process.
 
-III - Assumptions:
+## Assumptions
 
-The user must have some experience with Python and the command line
+Before proceeding, please make sure you meet the following requirements:
 
-A command-line-interface to interact with your computer
+-   You have some experience with Python and the command line.
+-   You have a command-line interface available to interact with your computer.
+-   You have a text editor installed to work with plain text files.
+-   You have Python version 3.7 installed.
+-   You have the pip package manager for Python installed.
 
-A text editor to work with plain text files
+## Libraries and Installations
 
-Version 3.7 of the Python programming language
+Before running the headless scripts, ensure that the following components are present on your server:
 
-The pip package manager for Python
+-   64-bit server
 
- 
 
-VII - The libraries & installations:
-
-Before running the headless scripts, we need to be sure to have on our server:
-
-64 bits server
-
+```
 $ lscpu | head -n 2
-Architecture:                    x86_64
-CPU op-mode(s):                  32-bit, 64-bit
+Architecture: x86_64
+CPU op-mode(s): 32-bit, 64-bit
+``` 
 
+-   Python 3
 
+rubyCopy code
 
-Python 3
-
+```
 $ python3 -V
 Python 3.8.2
+``` 
+
+-   pip3
 
 
-
-pip3
-
+```
 $ pip3 -V
 pip 20.1.1 from /home/roiarthurb/.local/lib/python3.8/site-packages/pip (python 3.8)
+``` 
+
+### Step 1: Create a Virtual Environment and Activate it
+
+To create a virtual environment, run the following command in the terminal:
+
+
+```
+pip install virtualenv
+``` 
+
+This command installs the virtualenv package. Once installed, create a virtual environment using the following command:
 
 
 
-STEP 1. Create a virtual Environment and activation , Run the following Command on terminal
+```
+virtualenv <environment_name>
+``` 
 
-pip install virtualenv  // to install the virtualenv package
+For Linux, activate the virtual environment using:
 
-virtualenv <name of environment> // this command create a Virtual Environment 
 
-source <name of environment>/bin/activate  // for linux
+```
+source <environment_name>/bin/activate
+```
+ 
 
-<name of environment>\Scripts\activate // for windows
+For Windows, use:
 
-STEP 2. Now we install the the dependencies of Project, for this run the following command
 
-pip install -r requirements.txt  // make sure you are in the base directory of the project
+```
+<environment_name>\Scripts\activate
+``` 
 
-VIII - Scraping The Data:
+### Step 2: Install Project Dependencies
 
-Now first we configure the MySQL database to store the data
+Navigate to the base directory of the project and install the dependencies using the following command:
 
-for that have to create a new database in MySQL and add the configuration of that database in .env  file located in base directory
+Copy code
 
-Make changes in  .env  file
+```
+pip install -r requirements.txt
+``` 
 
-DB_NAME="<name of database>"
+## Scraping the Data
+
+Before scraping the data, you need to configure the MySQL database to store the scraped information. Follow these steps:
+
+1.  Create a new database in MySQL.
+2.  Update the configuration in the `.env` file located in the base directory of the project. Make the following changes:
+
+
+```
+DB_NAME="<database_name>"
 DB_USER="<username>"
 DB_PASSWORD="<password>"
-DB_HOST="<HOST of database>"  # 'localhost'
-DB_PORT=<PORT of database> # 3360
+DB_HOST="<hostname>"  # e.g., 'localhost'
+DB_PORT=<port_number>  # e.g., 3360
+``` 
 
-Now run the following command to start scraping
+To start scraping, run the following command:
 
+
+```
 scrapy crawl netvendeur
+``` 
 
-If for some reason script terminated and you want to resume the scraping from the termination point run the following command
+If the script terminates for any reason and you want to resume scraping from the termination point, use the following command:
 
- scraping run "scrapy crawl netvendeur -s JOBDIR=crawls/netvendeur-1
+```
+scraping run "scrapy crawl netvendeur -s JOBDIR=crawls/netvendeur-1"
+``` 
+
+Please note that you should replace `<environment_name>`, `<database_name>`, `<username>`, `<password>`, `<hostname>`, and `<port_number>` with the appropriate values according to your setup.
+
+For more information and detailed instructions, please refer to the documentation.
