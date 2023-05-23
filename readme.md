@@ -33,7 +33,7 @@ CPU op-mode(s): 32-bit, 64-bit
 
 -   Python 3
 
-rubyCopy code
+
 
 ```
 $ python3 -V
@@ -84,7 +84,7 @@ For Windows, use:
 
 Navigate to the base directory of the project and install the dependencies using the following command:
 
-Copy code
+
 
 ```
 pip install -r requirements.txt
