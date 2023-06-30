@@ -4,38 +4,22 @@ from re import T
 import traceback
 from django.conf import settings
 from django.apps import apps
+from demo import settings as base_settings
 from unidecode import unidecode
 import os     
 from dotenv import load_dotenv
 import json
 import subprocess
+from django.db import connection
+
+# Get the cursor object
 load_dotenv()
-conf = {
-    'INSTALLED_APPS': [
-        'django.contrib.admin',
-        'django.contrib.auth',
-        'django.contrib.contenttypes',
-        'django.contrib.messages',
-        'django.contrib.sessions',
-        'django.contrib.sitemaps',
-        'django.contrib.sites',
-        'django.contrib.staticfiles',
-        'app',
-    ],
-    'DATABASES': {
-         'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'), 
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT')
-     },
-    },
-    'TIME_ZONE': 'UTC',
-    'SECRET_KEY' : 'django-insecure-r+r$dw1%v9t!y@#jp^th2wm9=h7k_nkgbl!fj%l3!t)p52s1d%'
-}
-settings.configure(**conf)
+settings_dict = {}
+for st in dir(base_settings):
+    if st.startswith('_') or not st.isupper():
+        continue
+    settings_dict[st] = getattr(base_settings, st)
+settings.configure(**settings_dict)
 apps.populate(settings.INSTALLED_APPS)
 process = subprocess.Popen("python manage.py migrate app", shell=True, stdout=subprocess.PIPE)
 process.wait()
@@ -153,3 +137,8 @@ def uploadInModel(instance,data,fields):
         newda.clean()
         newda.save()
     # return newda.id
+def clear_migrations():
+    cursor = connection.cursor()
+    # Execute a query to fetch all rows from the migration history table
+    cursor.execute("DELETE FROM django_migrations")
+    cursor.close()

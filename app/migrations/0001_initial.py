@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import django.db.models.deletion
-
+from django.conf import settings
 
 class Migration(migrations.Migration):
 
@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                 ('source', models.CharField(max_length=1000, unique=True)),
             ],
             options={
-                'db_table': 'Update_barometer_city',
+                'db_table': f'{settings.TABLE_MONTH}_barometer_city',
             },
         ),
         migrations.CreateModel(
@@ -119,7 +119,7 @@ class Migration(migrations.Migration):
                 ('source', models.CharField(max_length=1000, unique=True)),
             ],
             options={
-                'db_table': 'Update_barometer_region',
+                'db_table': f'{settings.TABLE_MONTH}_barometer_region',
             },
         ),
         migrations.CreateModel(
@@ -175,7 +175,7 @@ class Migration(migrations.Migration):
                 ('idCity', models.ForeignKey(db_column='idCity', null=True, on_delete=django.db.models.deletion.SET_NULL, to='app.scrapcity')),
             ],
             options={
-                'db_table': 'Update_barometer_quarter',
+                'db_table': f'{settings.TABLE_MONTH}_barometer_quarter',
             },
         ),
         migrations.CreateModel(
@@ -231,7 +231,7 @@ class Migration(migrations.Migration):
                 ('idQuarter', models.ForeignKey(db_column='idQuarter', null=True, on_delete=django.db.models.deletion.SET_NULL, to='app.scrapquarters')),
             ],
             options={
-                'db_table': 'Update_barometer_street',
+                'db_table': f'{settings.TABLE_MONTH}_barometer_street',
             },
         ),
         migrations.CreateModel(
@@ -287,7 +287,7 @@ class Migration(migrations.Migration):
                 ('idregion', models.ForeignKey(db_column='idregion', null=True, on_delete=django.db.models.deletion.SET_NULL, to='app.scrapdata')),
             ],
             options={
-                'db_table': 'Update_barometer_departement',
+                'db_table': f'{settings.TABLE_MONTH}_barometer_departement',
             },
         ),
         migrations.AddField(

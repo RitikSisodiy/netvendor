@@ -2,11 +2,11 @@ import json
 import re
 from itertools import zip_longest, takewhile, dropwhile
 from unittest import result
-from kifwat_scrapy.main import uploaddata
+from kifwat_scrapy.main import uploaddata , clear_migrations
 # from scrapy import Request
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
-
+from scrapy import signals
 class URL:
     def __init__(self,url) -> None:
         self.url = url
@@ -80,10 +80,16 @@ class NetvendeurSpider(CrawlSpider):
         'DUPEFILTER_CLASS': 'kifwat_scrapy.middlewares.CustomFilter',
         'USER_AGENT': 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
     }
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        print("its running")
+        spider = super(NetvendeurSpider, cls).from_crawler(crawler, *args, **kwargs)
+        crawler.signals.connect(spider.after_spider_closed, signal=signals.spider_closed)
+        return spider
 
-    # def start_requests(self):
-    #     return [Request('https://www.netvendeur.com/prix/ville-montrouge-92/', callback=self.parse_item)]
-
+    def after_spider_closed(self, spider):
+        print("deleteing the migration record from table")
+        clear_migrations()
     def parse_item(self, response, **__):
         typeofdata = __['typeofdata']
         parenturl = __['parenturl']
@@ -175,7 +181,7 @@ class NetvendeurSpider(CrawlSpider):
         yield self.parse_item(response,typeofdata='department',**kwargs)
 
         for link in LinkExtractor(
-                restrict_xpaths=['//h3[contains(., "villes")]/../div[contains(@class, "list_dep")]'],
+                restrict_xpaths=['//h3[contains(., "villes")]/../div[contains(@class, "list_dep")]','//*[@id="prix-arrondissement"]'],
                 allow=['/prix/']
         ).extract_links(response):
             yield response.follow(

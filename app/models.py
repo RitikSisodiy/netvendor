@@ -1,7 +1,7 @@
 from operator import mod
 from pyexpat import model
 from django.db import models
-
+from django.conf import settings
 # Create your models here.
 
 
@@ -53,7 +53,7 @@ class scrapData(models.Model):
     price_chart= models.TextField(null=True,blank=True)
     source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "Update_barometer_region"
+        db_table = f"{settings.TABLE_MONTH}_barometer_region"
     def clean(self):
         # print('inclean')
         for f in scrapData._meta.fields:
@@ -115,7 +115,7 @@ class scrapDepartment(models.Model):
     price_chart= models.TextField(null=True,blank=True)
     source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "Update_barometer_departement"
+        db_table = f"{settings.TABLE_MONTH}_barometer_departement"
     def bulk_create(self, objs, clean_check=None, batch_size=None, ignore_conflicts=False):
         print('bulk cleane is working')
         for obj in objs:
@@ -176,7 +176,7 @@ class scrapCity(models.Model):
     price_chart= models.TextField(null=True,blank=True)
     source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "Update_barometer_city"
+        db_table = f"{settings.TABLE_MONTH}_barometer_city"
     def bulk_create(self, objs, clean_check=None, batch_size=None, ignore_conflicts=False):
         print('bulk cleane is working')
         for obj in objs:
@@ -237,7 +237,7 @@ class scrapQuarters(models.Model):
     price_chart= models.TextField(null=True,blank=True)
     source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "Update_barometer_quarter"
+        db_table = f"{settings.TABLE_MONTH}_barometer_quarter"
     def clean(self):
         # print('inclean')
         for f in scrapQuarters._meta.fields:
@@ -298,7 +298,7 @@ class scrapStreets(models.Model):
     price_chart= models.TextField(null=True,blank=True)
     source = models.CharField(max_length=1000,unique=True)
     class Meta:
-        db_table = "Update_barometer_street"
+        db_table = f"{settings.TABLE_MONTH}_barometer_street"
     def clean(self):
         # print('inclean')
         for f in scrapStreets._meta.fields:
