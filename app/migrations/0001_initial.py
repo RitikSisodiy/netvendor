@@ -229,6 +229,7 @@ class Migration(migrations.Migration):
                 ('price_chart', models.TextField(blank=True, null=True)),
                 ('source', models.CharField(max_length=1000, unique=True)),
                 ('idQuarter', models.ForeignKey(db_column='idQuarter', null=True, on_delete=django.db.models.deletion.SET_NULL, to='app.scrapquarters')),
+                ('idCity', models.ForeignKey(db_column='idCity', null=True, on_delete=django.db.models.deletion.SET_NULL, to='app.scrapcity')),
             ],
             options={
                 'db_table': f'{settings.TABLE_MONTH}_barometer_street',

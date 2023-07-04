@@ -99,6 +99,11 @@ def uploaddata(oridata,typeofdata,parenturl):
             fields = [f.name for f in instance._meta.fields]
             data["idQuarter"] = scrapQuarters.objects.get(source=parenturl)
             res['streetid'] = uploadInModel(instance,data,fields)
+        if typeofdata == 'city_streets':
+            instance = scrapStreets
+            fields = [f.name for f in instance._meta.fields]
+            data["idCity"] = scrapCity.objects.get(source=parenturl)
+            res['streetid'] = uploadInModel(instance,data,fields)
             # return res
     except Exception as e:
         traceback.print_exc()
