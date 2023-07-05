@@ -190,26 +190,26 @@ class NetvendeurSpider(CrawlSpider):
                 )
     def parse_dept(self, response, **kwargs):
         yield self.parse_item(response,typeofdata='department',**kwargs)
-        # if response.css("#prix-departement .black_title .black_title a"):
-        #     for link in LinkExtractor(
-        #             restrict_css=['#prix-departement .black_title .black_title a'],
-        #             allow=['/prix/']
-        #     ).extract_links(response):
-        #         yield response.follow(
-        #             link.url,
-        #             callback=self.expand_city,
-        #             cb_kwargs=dict(parenturl = response.request.url)
-        #         )
-        # else:
-        for link in LinkExtractor(
-                restrict_xpaths=['//h3[contains(., "villes")]/../div[contains(@class, "list_dep")]','//*[@id="prix-arrondissement"]'],
-                allow=['/prix/']
-        ).extract_links(response):
-            yield response.follow(
-                link.url,
-                callback=self.parse_city,
-                cb_kwargs=dict(parenturl = response.request.url)
-            )
+        if response.css("#prix-departement .black_title .black_title a"):
+            for link in LinkExtractor(
+                    restrict_css=['#prix-departement .black_title .black_title a'],
+                    allow=['/prix/']
+            ).extract_links(response):
+                yield response.follow(
+                    link.url,
+                    callback=self.expand_city,
+                    cb_kwargs=dict(parenturl = response.request.url)
+                )
+        else:
+            for link in LinkExtractor(
+                    restrict_xpaths=['//h3[contains(., "villes")]/../div[contains(@class, "list_dep")]','//*[@id="prix-arrondissement"]'],
+                    allow=['/prix/']
+            ).extract_links(response):
+                yield response.follow(
+                    link.url,
+                    callback=self.parse_city,
+                    cb_kwargs=dict(parenturl = response.request.url)
+                )
     def expand_quater(self, response, **kwargs):
         for link in LinkExtractor(
                     restrict_css=['table'],
@@ -232,16 +232,16 @@ class NetvendeurSpider(CrawlSpider):
                     callback=self.expand_quater,
                     cb_kwargs=dict(parenturl = response.request.url)
                 )
-        # else:
-        #     for link in LinkExtractor(
-        #             restrict_css=['div#prix-autre-quartier'],
-        #             allow=['/prix/']
-        #     ).extract_links(response):
-        #         yield response.follow(
-        #             link.url,
-        #             callback=self.parse_quarter,
-        #             cb_kwargs=dict(parenturl = response.request.url)
-        #         )
+        else:
+            for link in LinkExtractor(
+                    restrict_css=['div#prix-autre-quartier'],
+                    allow=['/prix/']
+            ).extract_links(response):
+                yield response.follow(
+                    link.url,
+                    callback=self.parse_quarter,
+                    cb_kwargs=dict(parenturl = response.request.url)
+                )
 
     def parse_quarter(self, response, **kwargs):
         yield self.parse_item(response,typeofdata='quater',**kwargs)
