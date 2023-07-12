@@ -132,4 +132,4 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-TABLE_MONTH = datetime.now().strftime("%B")+"test"
+TABLE_MONTH = datetime.now().strftime("%B")

@@ -167,6 +167,7 @@ class NetvendeurQuartiersSpider(CrawlSpider):
         return result
 
     def parse_region(self, response, **kwargs):
+        yield self.parse_item(response, typeofdata="region", **kwargs)
         for link in LinkExtractor(
                 restrict_xpaths=['//h2[contains(., "départements")]/../div[contains(@class, "list_dep")]'],
                 allow=['/prix/']
@@ -188,6 +189,7 @@ class NetvendeurQuartiersSpider(CrawlSpider):
                     cb_kwargs=dict(parenturl = kwargs["parenturl"])
                 )
     def parse_dept(self, response, **kwargs):
+        yield self.parse_item(response, typeofdata="department", **kwargs)
         if response.css("#prix-departement .black_title .black_title a"):
             for link in LinkExtractor(
                     restrict_css=['#prix-departement .black_title .black_title a'],
