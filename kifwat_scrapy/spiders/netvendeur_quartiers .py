@@ -16,20 +16,7 @@ class URL:
 class Link:
     def extract_links(self,res):
         links = [
-            URL("https://www.netvendeur.com/prix/region-auvergne-rhone-alpes-3/"),
-            URL("https://www.netvendeur.com/prix/region-bourgogne-franche-comte-5/"),
-            URL("https://www.netvendeur.com/prix/region-bretagne-6/"),
-            URL("https://www.netvendeur.com/prix/region-centre-val-de-loire-7/"),
-            URL("https://www.netvendeur.com/prix/region-corse-9/"),
-            URL("https://www.netvendeur.com/prix/region-grand-est-1/"),
-            URL("https://www.netvendeur.com/prix/region-hauts-de-france-17/"),
-            URL("https://www.netvendeur.com/prix/region-ile-de-france-12/"),
-            URL("https://www.netvendeur.com/prix/region-normandie-4/"),
-            URL("https://www.netvendeur.com/prix/region-nouvelle-aquitaine-2/"),
-            URL("https://www.netvendeur.com/prix/region-occitanie-13/"),
-            URL("https://www.netvendeur.com/prix/region-outre-mer-23/"),
-            URL("https://www.netvendeur.com/prix/region-pays-de-la-loire-19/"),
-            URL("https://www.netvendeur.com/prix/region-provence-alpes-cote-d-azur-18/"),
+            URL("https://www.netvendeur.com/sitemap/quartiers.txt")
         ]
         return links
 class NetvendeurQuartiersSpider(CrawlSpider):
@@ -46,7 +33,7 @@ class NetvendeurQuartiersSpider(CrawlSpider):
     rules = (
         Rule(
             Link(),
-            callback='parse_region',
+            callback='parse_quarters',
             cb_kwargs=dict(parenturl = start_urls[0])
         ),
     )
@@ -114,7 +101,7 @@ class NetvendeurQuartiersSpider(CrawlSpider):
         if response.meta.get('quarter'):
             breadcrumbs_dict['proximité'] = breadcrumbs_dict['quarter']
             breadcrumbs_dict['quarter'] = response.meta['quarter']
-
+            parenturl = response.css('.fil-ariane li a[href*="https://www.netvendeur.com/prix/ville"]::attr(href)').get()
         price_chart = response.css('script:contains("ct-chart-price")').re_first('data:\s*({[\w\W]*?}),\s*options') or '{}'
         price_chart = json.loads(re.sub('(\w+):', r'"\1":', price_chart).replace("'", '"'))
 
@@ -166,89 +153,15 @@ class NetvendeurQuartiersSpider(CrawlSpider):
         # print(self.res)
         return result
 
-    def parse_region(self, response, **kwargs):
-        yield self.parse_item(response, typeofdata="region", **kwargs)
-        for link in LinkExtractor(
-                restrict_xpaths=['//h2[contains(., "départements")]/../div[contains(@class, "list_dep")]'],
-                allow=['/prix/']
-        ).extract_links(response):
-            yield response.follow(
-                link.url,
-                callback=self.parse_dept,
-                cb_kwargs=dict(parenturl = response.request.url)
-            )
-    def expand_city(self, response, **kwargs):
-        for link in LinkExtractor(
-                    restrict_css=['table'],
-                    allow=['/prix/']
-            ).extract_links(response):
-                print(link,link.url)
-                yield response.follow(
-                    link.url,
-                    callback=self.parse_city,
-                    cb_kwargs=dict(parenturl = kwargs["parenturl"])
-                )
-    def parse_dept(self, response, **kwargs):
-        yield self.parse_item(response, typeofdata="department", **kwargs)
-        if response.css("#prix-departement .black_title .black_title a"):
-            for link in LinkExtractor(
-                    restrict_css=['#prix-departement .black_title .black_title a'],
-                    allow=['/prix/']
-            ).extract_links(response):
-                yield response.follow(
-                    link.url,
-                    callback=self.expand_city,
-                    cb_kwargs=dict(parenturl = response.request.url)
-                )
-        else:
-            for link in LinkExtractor(
-                    restrict_xpaths=['//h3[contains(., "villes")]/../div[contains(@class, "list_dep")]','//*[@id="prix-arrondissement"]'],
-                    allow=['/prix/']
-            ).extract_links(response):
-                yield response.follow(
-                    link.url,
-                    callback=self.parse_city,
-                    cb_kwargs=dict(parenturl = response.request.url)
-                )
-    def expand_quater(self, response, **kwargs):
-        for link in LinkExtractor(
-                    restrict_css=['table'],
-                    allow=['/prix']
-            ).extract_links(response):
-                yield response.follow(
-                    link.url,
-                    callback=self.parse_item,
-                    cb_kwargs=dict(typeofdata='city_streets',parenturl = kwargs["parenturl"])
-                )
-    def parse_city(self, response, **kwargs):
-        yield self.parse_item(response,typeofdata='city',**kwargs)
-        for link in LinkExtractor(
-                restrict_css=['div#prix-autre-quartier'],
-                allow=['/prix/']
-        ).extract_links(response):
-            yield response.follow(
-                link.url,
-                callback=self.parse_item,
-                cb_kwargs=dict(parenturl = response.request.url,typeofdata='quater')
-            )
-
-    def parse_quarter(self, response, **kwargs):
-        yield self.parse_item(response,typeofdata='quater',**kwargs)
-        
-        breadcrumbs = response.css('[itemprop="itemListElement"] [itemprop="name"]::text').extract()[2:]
-        breadcrumbs = dict(zip_longest(['region', 'dept', 'city', 'quarter', 'proximité'], breadcrumbs))
-
-        for link in LinkExtractor(
-                restrict_css=['div#prix-rue'],
-                allow=['/prix']
-        ).extract_links(response):
+    def parse_quarters(self, response, **kwargs):
+        for link in response.css("loc::text"):
             # request proximity areas inside the city
             yield response.follow(
-                link.url,
-                meta={'quarter': breadcrumbs['quarter']},
+                link.get(),
                 callback=self.parse_item,
-                cb_kwargs=dict(typeofdata='streets',parenturl = response.request.url)
+                cb_kwargs=dict(typeofdata='quater',parenturl = response.request.url)
             )
+
 
     def _partition_by_type(self, response):
         head = response.xpath(
