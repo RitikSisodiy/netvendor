@@ -32,8 +32,8 @@ class Link:
             URL("https://www.netvendeur.com/prix/region-provence-alpes-cote-d-azur-18/"),
         ]
         return links
-class NetvendeurSpider(CrawlSpider):
-    name = 'netvendeur'
+class NetvendeurQuartiersSpider(CrawlSpider):
+    name = 'netvendeur_quartiers'
     start_urls = [
         'https://www.netvendeur.com/prix-immobilier/'
     ]
