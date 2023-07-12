@@ -84,7 +84,7 @@ class NetvendeurQuartiersSpider(CrawlSpider):
     @classmethod
     def from_crawler(cls, crawler, *args, **kwargs):
         print("its running")
-        spider = super(NetvendeurSpider, cls).from_crawler(crawler, *args, **kwargs)
+        spider = super(NetvendeurQuartiersSpider, cls).from_crawler(crawler, *args, **kwargs)
         crawler.signals.connect(spider.after_spider_closed, signal=signals.spider_closed)
         return spider
 
