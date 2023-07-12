@@ -101,6 +101,7 @@ class NetvendeurQuartiersSpider(CrawlSpider):
         if response.meta.get('quarter'):
             breadcrumbs_dict['proximité'] = breadcrumbs_dict['quarter']
             breadcrumbs_dict['quarter'] = response.meta['quarter']
+        if typeofdata == "quater":
             parenturl = response.css('.fil-ariane li a[href*="https://www.netvendeur.com/prix/ville"]::attr(href)').get()
         price_chart = response.css('script:contains("ct-chart-price")').re_first('data:\s*({[\w\W]*?}),\s*options') or '{}'
         price_chart = json.loads(re.sub('(\w+):', r'"\1":', price_chart).replace("'", '"'))
